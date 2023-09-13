@@ -11,22 +11,23 @@ internal class Program
             //-------------------------
 
             // String Array damit es im .Split die Vorgabe erfüllt eines string[], ansonsten wäre natürlich char[] besser.
+
             string[] ops = { "+", "-", "*", "/", "%"};
             string[] numf = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ",", ".", " "};
-            //string[] chars = { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" }; // hatte keine lust
 
 
             //-------------------------
-            //Variablen
+            //Variables
             //-------------------------
-            Console.WriteLine("Bitte die Formel mit 2 Zahlen eingeben");
+
+            Console.WriteLine("Bitte die Formel mit unendlich vielen Zahlen eingeben");
             string input = Console.ReadLine();
             bool fail = false;
             int counter = 0;
             double res = 0;
 
             //-------------------------
-            //Fehlersuche
+            //Error finding
             //-------------------------
 
 
@@ -39,23 +40,44 @@ internal class Program
                 }
             }
             
-            
-            if (fail || input == String.Empty) // fail == true oder leere eingabe == continue und fehlermeldung.
+            if (fail || input == String.Empty) // fail == true oder empty input == continue and error handling.
             {
-                Console.WriteLine("falsches oder kein Zeichen eingegeben");
+                Console.WriteLine("Fehler: Falsches oder kein Zeichen eingegeben");
+                continue;
+            }
+
+            if (input.Contains("/0"))
+            {
+                Console.WriteLine("Fehler: Du darfst nicht durch 0 teilen.");
                 continue;
             }
 
             //-------------------------------
-            //storage Arrays zum weiternutzen
+            //Storage Arrays to use later
             //-------------------------------
 
             string[] tempNumStorage = input.Split(ops, StringSplitOptions.RemoveEmptyEntries);
             string[] tempOpStorage = input.Split(numf, StringSplitOptions.RemoveEmptyEntries);
 
-            
+            //-------------------------
+            //Exception finding
+            //-------------------------
 
-            //Fehler bei zu wenigen Eingaben.
+            //Fehler bei zu wenigen Eingaben oder doppelt Operatoren Eingaben.
+
+            foreach (string s in tempOpStorage)
+            {
+                if (s.Length >= 1)
+                {
+                    fail = true; break;
+                }
+            }
+
+            if (fail) // fail == true oder leere eingabe == continue und fehlermeldung.
+            {
+                Console.WriteLine("Fehler: Du hast zwei Zeichen aufeinmal eingegeben");
+                continue;
+            }
 
             if (tempNumStorage.Length < 2)
             {
@@ -63,8 +85,17 @@ internal class Program
                 continue;
             }
 
+            //-------------------------------
+            //Storage Lists to use later
+            //-------------------------------
+
             List<double> numStorage = new List<double>(); //Erstellung von einer List um Werte besser zu nutzen
-            List<string> opStorage = new List<string>();
+            List<string> opStorage = new List<string>(); //Aufbewahrung Operatoren
+            List<string> tempStorage = new List<string>(); //Um Operatoren nicht löschen zu müssen später
+
+            //-------------------------------
+            //Storage filling
+            //-------------------------------
 
             foreach (string num in tempNumStorage)
             {
@@ -76,90 +107,70 @@ internal class Program
                 opStorage.Add(op);
             }
 
+            //-------------------------------
+            //Calculation
+            //-------------------------------
 
             foreach (string op in opStorage)
             {
                 if (op == "*")
                 {
-                    res = numStorage[counter] * numStorage[++counter];
-                    numStorage.RemoveRange(counter, counter++);
+                    res = numStorage[counter] * numStorage[counter + 1];
+                    numStorage.RemoveRange(counter, 2);
                     numStorage.Insert(counter, res);
-                    opStorage.RemoveRange(counter, counter);
-                    //counter++;
                 }
                 else if (op == "/")
                 {
                     res = numStorage[counter] / numStorage[counter + 1];
-                    numStorage.RemoveRange(counter, counter + 1);
+                    numStorage.RemoveRange(counter, 2);
                     numStorage.Insert(counter, res);
-                    opStorage.RemoveRange(counter, counter);
-                    //counter++;
                 }
-                else if (op == "=") { counter = 0; break; }
+                else if (op == "+" || op == "-")
+                {
+                    tempStorage.Add(op);
                     counter++;
-                
+                }
+                else { counter = 0; break; }
             }
+            counter = 0;
+            opStorage.Clear();
+            opStorage.AddRange(tempStorage);
 
             foreach (string op in opStorage)
             {
-                if (op == "+")
+                if (counter == 0)
                 {
-                    res = numStorage[counter] + numStorage[counter + 1];
-                    numStorage.RemoveRange(counter, counter + 1);
-                    numStorage.Insert(counter, res);
+                    if (op == "+")
+                    {
+                        res = numStorage[counter] + numStorage[counter + 1];
+                        numStorage.RemoveRange(counter, 2);
+                        counter++;
+                    }
+                    else
+                    {
+                        res = numStorage[counter] - numStorage[counter + 1];
+                        numStorage.RemoveRange(counter, 2);
+                        counter++;
+                    }
+                }
+                else if (op == "+")
+                {
+                    res += numStorage[0];
                     counter++;
                 }
                 else if (op == "-")
                 {
-                    res = numStorage[counter] / numStorage[counter + 1];
-                    numStorage.RemoveRange(counter, counter + 1);
-                    numStorage.Insert(counter, res);
+                    res -= numStorage[0];
                     counter++;
                 }
-                else if (op == "=") { break; }
-                else
-                {
-                    counter++;
-                }
+                else { break; }
             }
-
-            ////-------------------------
-            ////Variablen zum Rechnen
-            ////-------------------------
-
-
-            //double n1 = Convert.ToDouble(tempNumStorage[0]);
-            //double n2 = Convert.ToDouble(tempNumStorage[1]);
-
-            ////-------------------------
-            ////Conditional Calculating
-            ////-------------------------
-
-            //switch (opstorage[0])
-            //{
-            //    case "+":
-            //        res = n1 + n2;
-            //        break;
-            //    case "-":
-            //        res = n1 - n2;
-            //        break;
-            //    case "*":
-            //        res = n1 * n2;
-            //        break;
-            //    case "/":
-            //        res = n1 / n2;
-            //        break;
-            //    case "%":
-            //        res = n1 % n2;
-            //        break;
-            //    default:
-            //        break;
-            //}
 
             //-------------------------
             //Ergebnis
             //-------------------------
+
             Console.WriteLine($"Das Ergebnis von {input} lautet = {Math.Round(res, 2)}");
-        }
+         }
     }
 }

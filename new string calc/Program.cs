@@ -67,7 +67,7 @@ internal class Program
 
             foreach (string s in tempOpStorage)
             {
-                if (s.Length >= 1)
+                if (s.Length > 1)
                 {
                     fail = true; break;
                 }
